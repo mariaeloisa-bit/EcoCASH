@@ -7,7 +7,7 @@
   <style>
     :root { --primary: #1b7a43; --gcash: #007dfe; --bg: #f3f8f4; --card: #ffffff; --text: #1e293b; }
     body { font-family: system-ui, sans-serif; background: var(--bg); color: var(--text); margin: 0; padding: 20px; }
-    .container { max-width: 760px; margin: 0 auto; }
+    .container { max-width: 780px; margin: 0 auto; }
     .auth-box { max-width: 380px; margin: 60px auto; background: var(--card); padding: 28px; border-radius: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.08); }
     input, select { width: 100%; padding: 10px; margin: 8px 0; border: 1px solid #cbd5e1; border-radius: 6px; box-sizing: border-box; font-size: 0.95rem; }
     header { background: var(--primary); color: white; padding: 24px; border-radius: 12px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px; }
@@ -20,8 +20,14 @@
     button.gcash-btn { background: var(--gcash); }
     button.secondary { background: #64748b; }
     .hidden { display: none; }
-    ul { padding-left: 18px; font-size: 0.9rem; color: #475569; line-height: 1.6; }
     .rate-tag { background: #e0f2fe; color: #0369a1; padding: 6px 10px; border-radius: 6px; font-size: 0.85rem; font-weight: 600; display: inline-block; margin-bottom: 10px; }
+    .upload-box { border: 2px dashed #94a3b8; border-radius: 8px; padding: 12px; text-align: center; background: #f8fafc; margin: 8px 0; cursor: pointer; }
+    .upload-box:hover { border-color: var(--primary); background: #f0fdf4; }
+    #photo-preview { max-width: 100%; max-height: 150px; border-radius: 6px; margin-top: 8px; display: none; object-fit: cover; }
+    .history-list { list-style: none; padding: 0; margin: 0; }
+    .history-item { display: flex; align-items: center; gap: 12px; padding: 10px 0; border-bottom: 1px solid #e2e8f0; font-size: 0.9rem; color: #334155; }
+    .history-item:last-child { border-bottom: none; }
+    .evidence-thumb { width: 52px; height: 52px; border-radius: 6px; object-fit: cover; border: 1px solid #cbd5e1; flex-shrink: 0; }
     @media (max-width: 640px) { .grid { grid-template-columns: 1fr; } }
   </style>
 </head>
@@ -54,14 +60,31 @@
     </header>
 
     <div class="grid">
+      <!-- SUBMIT BASURA WITH PHOTO EVIDENCE -->
       <div class="card">
-        <h3 style="margin-top:0;">Mag-ipon ng EcoPoints</h3>
-        <button onclick="earnPoints('Nag-recycle ng plastic/bote', 20)">♻️ Recycle Plastics/Cans (+20 pts)</button>
-        <button onclick="earnPoints('Gumamit ng reusable tumbler/ecobag', 15)">🥤 Reusable Tumbler/Bag (+15 pts)</button>
-        <button onclick="earnPoints('Naglakad o nag-bike papunta sa destination', 30)">🚲 Walk / Bike Commute (+30 pts)</button>
-        <button onclick="earnPoints('Nagtanim ng puno/halaman', 100)">🌳 Plant a Seedling (+100 pts)</button>
+        <h3 style="margin-top:0;">📸 Mag-submit ng Basura (+Points)</h3>
+        
+        <label style="font-size:0.85rem; font-weight:600;">1. Uri ng Basura / Eco-Action:</label>
+        <select id="trash-type">
+          <option value="Plastic Bottles / PET (1 kg)|30">♻️ Plastic Bottles / PET (+30 pts)</option>
+          <option value="Aluminum Cans / Lata|25">🥫 Aluminum Cans / Lata (+25 pts)</option>
+          <option value="Karton / Papel / Dyaryo|20">📦 Karton / Papel (+20 pts)</option>
+          <option value="Segregated Trash / Linis-Tapat|15">🧹 Segregated Trash (+15 pts)</option>
+          <option value="Nag-tanim ng Halaman / Puno|50">🌳 Planted Seedling (+50 pts)</option>
+        </select>
+
+        <label style="font-size:0.85rem; font-weight:600;">2. Picture ng Basura (Required Evidence):</label>
+        <div class="upload-box" onclick="document.getElementById('trash-photo').click()">
+          <span id="upload-label" style="font-size:0.88rem; color:#475569;">📷 I-click para kumuha o pumili ng picture</span>
+          <input type="file" id="trash-photo" accept="image/*" capture="environment" class="hidden" onchange="previewPhoto(event)" />
+          <img id="photo-preview" alt="Preview ng basura" />
+        </div>
+
+        <button onclick="submitTrashWithPhoto()">Submit Evidence & Claim Points</button>
+        <p id="submit-msg" style="font-size:0.85rem; margin-top:8px;"></p>
       </div>
 
+      <!-- GCASH CASHOUT -->
       <div class="card">
         <h3 style="margin-top:0; color:var(--gcash);">💙 Convert Points to GCash</h3>
         <div class="rate-tag">Rate: 100 pts = ₱10.00 GCash</div>
@@ -82,9 +105,10 @@
       </div>
     </div>
 
+    <!-- ACTIVITY & EVIDENCE HISTORY -->
     <div class="card" style="margin-top: 20px;">
-      <h3 style="margin-top:0;">Activity & GCash Cashout History</h3>
-      <ul id="history"></ul>
+      <h3 style="margin-top:0;">Activity History & Photo Evidence</h3>
+      <ul id="history" class="history-list"></ul>
     </div>
   </div>
 
@@ -93,6 +117,7 @@
     let isSignUp = false;
     let users = JSON.parse(localStorage.getItem("ecoUsers")) || {};
     let currentEmail = localStorage.getItem("ecoCurrentUser") || null;
+    let currentCompressedPhoto = null;
 
     const authScreen = document.getElementById("auth-screen");
     const appScreen = document.getElementById("app-screen");
@@ -120,9 +145,7 @@
       const name = nameInput.value.trim() || email.split("@")[0];
       authError.textContent = "";
 
-      if (!email || !password) {
-        return (authError.textContent = "Ilagay ang email at password.");
-      }
+      if (!email || !password) return (authError.textContent = "Ilagay ang email at password.");
 
       if (isSignUp) {
         if (users[email]) return (authError.textContent = "May account na ang email na ito.");
@@ -148,14 +171,87 @@
       appScreen.classList.add("hidden");
     };
 
+    // Compress photo para kasya sa storage at mabilis mag-load
+    window.previewPhoto = (event) => {
+      const file = event.target.files[0];
+      if (!file) return;
+
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        const img = new Image();
+        img.onload = () => {
+          const canvas = document.createElement("canvas");
+          const maxWidth = 300;
+          const scale = maxWidth / img.width;
+          canvas.width = maxWidth;
+          canvas.height = img.height * scale;
+          const ctx = canvas.getContext("2d");
+          ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+
+          currentCompressedPhoto = canvas.toDataURL("image/jpeg", 0.7);
+          const preview = document.getElementById("photo-preview");
+          preview.src = currentCompressedPhoto;
+          preview.style.display = "block";
+          document.getElementById("upload-label").textContent = "✅ Picture ready! (I-click ulit kung papalitan)";
+        };
+        img.src = e.target.result;
+      };
+      reader.readAsDataURL(file);
+    };
+
+    window.submitTrashWithPhoto = () => {
+      const msg = document.getElementById("submit-msg");
+      msg.style.color = "#dc2626";
+
+      if (!currentCompressedPhoto) {
+        return (msg.textContent = "⚠️ Kailangan muna mag-upload o mag-picture ng basura bago makakuha ng points!");
+      }
+
+      const [actionLabel, ptsStr] = document.getElementById("trash-type").value.split("|");
+      const pts = Number(ptsStr);
+      const user = users[currentEmail];
+
+      user.points += pts;
+      user.logs.unshift({
+        text: `+${pts} pts — ${actionLabel} (${new Date().toLocaleDateString()})`,
+        photo: currentCompressedPhoto
+      });
+
+      // Reset photo input
+      currentCompressedPhoto = null;
+      document.getElementById("trash-photo").value = "";
+      document.getElementById("photo-preview").style.display = "none";
+      document.getElementById("upload-label").textContent = "📷 I-click para kumuha o pumili ng picture";
+
+      msg.style.color = "#15803d";
+      msg.textContent = `Na-verify ang photo! Nakakuha ka ng +${pts} EcoPoints.`;
+      saveData();
+    };
+
     function showDashboard() {
       const user = users[currentEmail];
       if (!user) return;
       document.getElementById("user-name").textContent = user.name;
       document.getElementById("balance").textContent = user.points;
       document.getElementById("peso-balance").textContent = (user.points * PESO_PER_POINT).toFixed(2);
-      document.getElementById("history").innerHTML =
-        user.logs.map(item => `<li>${item}</li>`).join("") || "<li>Wala pang activity. Mag-ipon ng points sa itaas!</li>";
+
+      const historyEl = document.getElementById("history");
+      if (!user.logs.length) {
+        historyEl.innerHTML = "<li style='color:#64748b; font-size:0.9rem;'>Wala pang activity. Mag-picture ng basura para mag-ipon ng points!</li>";
+      } else {
+        historyEl.innerHTML = user.logs.map(item => {
+          if (typeof item === "string") {
+            return `<li class="history-item"><span>${item}</span></li>`;
+          }
+          return `
+            <li class="history-item">
+              ${item.photo ? `<img src="${item.photo}" class="evidence-thumb" alt="Evidence" />` : ""}
+              <span>${item.text}</span>
+            </li>
+          `;
+        }).join("");
+      }
+
       authScreen.classList.add("hidden");
       appScreen.classList.remove("hidden");
     }
@@ -164,13 +260,6 @@
       localStorage.setItem("ecoUsers", JSON.stringify(users));
       showDashboard();
     }
-
-    window.earnPoints = (action, amount) => {
-      const user = users[currentEmail];
-      user.points += amount;
-      user.logs.unshift(`+${amount} pts — ${action} (${new Date().toLocaleDateString()})`);
-      saveData();
-    };
 
     window.requestGCashCashout = () => {
       const user = users[currentEmail];
@@ -186,7 +275,10 @@
       if (!gcashName) return (msg.textContent = "Ilagay ang pangalan ng GCash account.");
 
       user.points -= ptsRequired;
-      user.logs.unshift(`-${ptsRequired} pts — GCash Cashout ₱${pesoAmount.toFixed(2)} to ${gcashNumber} (${gcashName}) [Pending]`);
+      user.logs.unshift({
+        text: `-${ptsRequired} pts — GCash Cashout ₱${pesoAmount.toFixed(2)} to ${gcashNumber} (${gcashName}) [Pending]`,
+        photo: null
+      });
       saveData();
 
       document.getElementById("gcash-number").value = "";

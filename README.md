@@ -69,8 +69,8 @@
           <option value="Plastic Bottles / PET (1 kg)|30">♻️ Plastic Bottles / PET (+30 pts)</option>
           <option value="Aluminum Cans / Lata|25">🥫 Aluminum Cans / Lata (+25 pts)</option>
           <option value="Karton / Papel / Dyaryo|20">📦 Karton / Papel (+20 pts)</option>
-          <option value="Segregated Trash / Linis-Tapat|15">🧹 Segregated Trash (+15 pts)</option>
-          <option value="Nag-tanim ng Halaman / Puno|50">🌳 Planted Seedling (+50 pts)</option>
+          <option value="plastic bottles |15"> plastic bottles (+15 pts)</option>
+          <option value=landok|50">metal (+50 pts)</option>
         </select>
 
         <label style="font-size:0.85rem; font-weight:600;">2. Picture ng Basura (Required Evidence):</label>
@@ -91,10 +91,10 @@
         
         <label style="font-size:0.85rem; font-weight:600;">Piliin ang Amount:</label>
         <select id="cashout-tier">
-          <option value="100">100 pts → ₱10.00 GCash</option>
-          <option value="200">200 pts → ₱20.00 GCash</option>
-          <option value="500">500 pts → ₱50.00 GCash</option>
-          <option value="1000">1,000 pts → ₱100.00 GCash</option>
+          <option value="1000">1000 pts → ₱10.00 GCash</option>
+          <option value="2000">2000 pts → ₱20.00 GCash</option>
+          <option value="5000">5000 pts → ₱50.00 GCash</option>
+          <option value="10000">10,000 pts → ₱100.00 GCash</option>
         </select>
 
         <input type="tel" id="gcash-number" placeholder="GCash Number (hal. 09171234567)" maxlength="11" />

@@ -66,11 +66,11 @@
         
         <label style="font-size:0.85rem; font-weight:600;">1. Uri ng Basura / Eco-Action:</label>
         <select id="trash-type">
-          <option value="Plastic Bottles / PET (1 kg)|30">♻️ Plastic Bottles / PET (+30 pts)</option>
-          <option value="Aluminum Cans / Lata|25">🥫 Aluminum Cans / Lata (+25 pts)</option>
-          <option value="Karton / Papel / Dyaryo|20">📦 Karton / Papel (+20 pts)</option>
-          <option value="plastic bottles |15"> plastic bottles (+15 pts)</option>
-          <option value=landok|50">metal (+50 pts)</option>
+          <option value="Plastic Bottles / PET (1 kg)|500">♻️ Plastic Bottles / PET (+500 pts)</option>
+          <option value="Aluminum Cans / Lata |20">🥫 Aluminum Cans / Lata (+20 pts)</option>
+          <option value="Tanso / copper (1kg)|100,000">🔌 Tanso/ copper(1kg) (+100,000 pts)</option>
+          <option value="plastic bottles (1 kg)|4">🥤 plastic bottles (1 kg) (+4pts)</option
+          <option value="landok / metal / steel (1kg)|500">⛓️ landok / metal / steel (1kg) (+500 pts)</option>
         </select>
 
         <label style="font-size:0.85rem; font-weight:600;">2. Picture ng Basura (Required Evidence):</label>

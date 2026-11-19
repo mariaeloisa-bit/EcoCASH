@@ -33,7 +33,7 @@
     <p id="auth-subtitle" style="color:#64748b; font-size:0.9rem;">Mag-log in para mag-ipon ng points at mag-cash out sa GCash.</p>
     <input type="text" id="name-input" class="hidden" placeholder="Full Name (hal. Maria Eloisa)" />
     <input type="email" id="email-input" placeholder="Email Address" />
-    <input type="password" id="password-input" placeholder="Password (min. 6 characters)" />
+    <input type="password" id="password-input" placeholder="Password" />
     <button id="auth-submit-btn">Log In</button>
     <button id="toggle-auth-btn" class="secondary">Wala pang account? Sign Up</button>
     <p id="auth-error" style="color:#dc2626; font-size:0.85rem; margin-top:10px;"></p>
@@ -54,7 +54,6 @@
     </header>
 
     <div class="grid">
-      <!-- EARN POINTS -->
       <div class="card">
         <h3 style="margin-top:0;">Mag-ipon ng EcoPoints</h3>
         <button onclick="earnPoints('Nag-recycle ng plastic/bote', 20)">♻️ Recycle Plastics/Cans (+20 pts)</button>
@@ -63,17 +62,16 @@
         <button onclick="earnPoints('Nagtanim ng puno/halaman', 100)">🌳 Plant a Seedling (+100 pts)</button>
       </div>
 
-      <!-- GCASH CASHOUT -->
       <div class="card">
         <h3 style="margin-top:0; color:var(--gcash);">💙 Convert Points to GCash</h3>
         <div class="rate-tag">Rate: 100 pts = ₱10.00 GCash</div>
         
         <label style="font-size:0.85rem; font-weight:600;">Piliin ang Amount:</label>
         <select id="cashout-tier">
-          <option value="100">100 pts $\rightarrow$ ₱10.00 GCash</option>
-          <option value="200">200 pts $\rightarrow$ ₱20.00 GCash</option>
-          <option value="500">500 pts $\rightarrow$ ₱50.00 GCash</option>
-          <option value="1000">1,000 pts $\rightarrow$ ₱100.00 GCash</option>
+          <option value="100">100 pts → ₱10.00 GCash</option>
+          <option value="200">200 pts → ₱20.00 GCash</option>
+          <option value="500">500 pts → ₱50.00 GCash</option>
+          <option value="1000">1,000 pts → ₱100.00 GCash</option>
         </select>
 
         <input type="tel" id="gcash-number" placeholder="GCash Number (hal. 09171234567)" maxlength="11" />
@@ -84,38 +82,17 @@
       </div>
     </div>
 
-    <!-- ACTIVITY & CASHOUT HISTORY -->
     <div class="card" style="margin-top: 20px;">
       <h3 style="margin-top:0;">Activity & GCash Cashout History</h3>
       <ul id="history"></ul>
     </div>
   </div>
 
-  <script type="module">
-    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
-    import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
-    import { getFirestore, doc, getDoc, setDoc, updateDoc, collection, addDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
-
-    // PALITAN ITO NG SARILI MONG FIREBASE CONFIG
-    const firebaseConfig = {
-      apiKey: "ILAGAY-DITO-ANG-API-KEY",
-      authDomain: "ILAGAY-DITO-ANG-AUTH-DOMAIN",
-      projectId: "ILAGAY-DITO-ANG-PROJECT-ID",
-      storageBucket: "ILAGAY-DITO-ANG-STORAGE-BUCKET",
-      messagingSenderId: "ILAGAY-DITO-ANG-SENDER-ID",
-      appId: "ILAGAY-DITO-ANG-APP-ID"
-    };
-
-    const app = initializeApp(firebaseConfig);
-    const auth = getAuth(app);
-    const db = getFirestore(app);
-
-    // Conversion Rate: 100 pts = ₱10 (1 pt = ₱0.10)
+  <script>
     const PESO_PER_POINT = 0.10;
-
     let isSignUp = false;
-    let currentUser = null;
-    let userData = { name: "", email: "", points: 0, logs: [] };
+    let users = JSON.parse(localStorage.getItem("ecoUsers")) || {};
+    let currentEmail = localStorage.getItem("ecoCurrentUser") || null;
 
     const authScreen = document.getElementById("auth-screen");
     const appScreen = document.getElementById("app-screen");
@@ -137,59 +114,66 @@
       authError.textContent = "";
     };
 
-    authSubmitBtn.onclick = async () => {
-      const email = emailInput.value.trim();
+    authSubmitBtn.onclick = () => {
+      const email = emailInput.value.trim().toLowerCase();
       const password = passwordInput.value;
       const name = nameInput.value.trim() || email.split("@")[0];
       authError.textContent = "";
 
-      try {
-        if (isSignUp) {
-          const cred = await createUserWithEmailAndPassword(auth, email, password);
-          await setDoc(doc(db, "users", cred.user.uid), { name, email, points: 0, logs: [] });
-        } else {
-          await signInWithEmailAndPassword(auth, email, password);
+      if (!email || !password) {
+        return (authError.textContent = "Ilagay ang email at password.");
+      }
+
+      if (isSignUp) {
+        if (users[email]) return (authError.textContent = "May account na ang email na ito.");
+        users[email] = { name, password, points: 0, logs: [] };
+        localStorage.setItem("ecoUsers", JSON.stringify(users));
+        currentEmail = email;
+        localStorage.setItem("ecoCurrentUser", currentEmail);
+        showDashboard();
+      } else {
+        if (!users[email] || users[email].password !== password) {
+          return (authError.textContent = "Maling email o password. Mag-Sign Up muna kung wala pang account.");
         }
-      } catch (err) {
-        authError.textContent = err.message.replace("Firebase: ", "");
+        currentEmail = email;
+        localStorage.setItem("ecoCurrentUser", currentEmail);
+        showDashboard();
       }
     };
 
-    document.getElementById("logout-btn").onclick = () => signOut(auth);
+    document.getElementById("logout-btn").onclick = () => {
+      currentEmail = null;
+      localStorage.removeItem("ecoCurrentUser");
+      authScreen.classList.remove("hidden");
+      appScreen.classList.add("hidden");
+    };
 
-    onAuthStateChanged(auth, async (user) => {
-      if (user) {
-        currentUser = user;
-        const snap = await getDoc(doc(db, "users", user.uid));
-        if (snap.exists()) userData = snap.data();
-        renderDashboard();
-        authScreen.classList.add("hidden");
-        appScreen.classList.remove("hidden");
-      } else {
-        currentUser = null;
-        authScreen.classList.remove("hidden");
-        appScreen.classList.add("hidden");
-      }
-    });
-
-    function renderDashboard() {
-      document.getElementById("user-name").textContent = userData.name;
-      document.getElementById("balance").textContent = userData.points;
-      document.getElementById("peso-balance").textContent = (userData.points * PESO_PER_POINT).toFixed(2);
+    function showDashboard() {
+      const user = users[currentEmail];
+      if (!user) return;
+      document.getElementById("user-name").textContent = user.name;
+      document.getElementById("balance").textContent = user.points;
+      document.getElementById("peso-balance").textContent = (user.points * PESO_PER_POINT).toFixed(2);
       document.getElementById("history").innerHTML =
-        userData.logs.map(item => `<li>${item}</li>`).join("") || "<li>Wala pang activity. Mag-ipon ng points sa itaas!</li>";
+        user.logs.map(item => `<li>${item}</li>`).join("") || "<li>Wala pang activity. Mag-ipon ng points sa itaas!</li>";
+      authScreen.classList.add("hidden");
+      appScreen.classList.remove("hidden");
     }
 
-    window.earnPoints = async (action, amount) => {
-      if (!currentUser) return;
-      userData.points += amount;
-      userData.logs.unshift(`+${amount} pts — ${action} (${new Date().toLocaleDateString()})`);
-      renderDashboard();
-      await updateDoc(doc(db, "users", currentUser.uid), { points: userData.points, logs: userData.logs });
+    function saveData() {
+      localStorage.setItem("ecoUsers", JSON.stringify(users));
+      showDashboard();
+    }
+
+    window.earnPoints = (action, amount) => {
+      const user = users[currentEmail];
+      user.points += amount;
+      user.logs.unshift(`+${amount} pts — ${action} (${new Date().toLocaleDateString()})`);
+      saveData();
     };
 
-    window.requestGCashCashout = async () => {
-      if (!currentUser) return;
+    window.requestGCashCashout = () => {
+      const user = users[currentEmail];
       const ptsRequired = Number(document.getElementById("cashout-tier").value);
       const pesoAmount = ptsRequired * PESO_PER_POINT;
       const gcashNumber = document.getElementById("gcash-number").value.trim();
@@ -197,41 +181,21 @@
       const msg = document.getElementById("cashout-msg");
 
       msg.style.color = "#dc2626";
-      if (userData.points < ptsRequired) {
-        return (msg.textContent = `Kulang pa ang points mo. Kailangan ng ${ptsRequired} pts.`);
-      }
-      if (!/^09\d{9}$/.test(gcashNumber)) {
-        return (msg.textContent = "Ilagay ang tamang 11-digit GCash number (nagsisimula sa 09).");
-      }
-      if (!gcashName) {
-        return (msg.textContent = "Ilagay ang pangalan ng GCash account.");
-      }
+      if (user.points < ptsRequired) return (msg.textContent = `Kulang pa ang points mo. Kailangan ng ${ptsRequired} pts.`);
+      if (!/^09\d{9}$/.test(gcashNumber)) return (msg.textContent = "Ilagay ang tamang 11-digit GCash number (09xxxxxxxxx).");
+      if (!gcashName) return (msg.textContent = "Ilagay ang pangalan ng GCash account.");
 
-      // Ibawas ang points at i-record sa user logs
-      userData.points -= ptsRequired;
-      const logEntry = `-${ptsRequired} pts — GCash Cashout ₱${pesoAmount.toFixed(2)} to ${gcashNumber} (${gcashName}) [Pending]`;
-      userData.logs.unshift(logEntry);
-      renderDashboard();
-
-      // I-update ang user points at mag-save sa 'cashout_requests' collection para makita ng Admin
-      await updateDoc(doc(db, "users", currentUser.uid), { points: userData.points, logs: userData.logs });
-      await addDoc(collection(db, "cashout_requests"), {
-        uid: currentUser.uid,
-        userName: userData.name,
-        email: userData.email,
-        pointsDeducted: ptsRequired,
-        pesoAmount: pesoAmount,
-        gcashNumber: gcashNumber,
-        gcashName: gcashName,
-        status: "Pending",
-        requestedAt: serverTimestamp()
-      });
+      user.points -= ptsRequired;
+      user.logs.unshift(`-${ptsRequired} pts — GCash Cashout ₱${pesoAmount.toFixed(2)} to ${gcashNumber} (${gcashName}) [Pending]`);
+      saveData();
 
       document.getElementById("gcash-number").value = "";
       document.getElementById("gcash-name").value = "";
       msg.style.color = "#15803d";
       msg.textContent = `Naipadala na ang request mo na ₱${pesoAmount.toFixed(2)} sa GCash (${gcashNumber})!`;
     };
+
+    if (currentEmail && users[currentEmail]) showDashboard();
   </script>
 </body>
 </html>

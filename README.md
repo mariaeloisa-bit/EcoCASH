@@ -75,7 +75,7 @@
           <option value="Plastic Bottles / PET (1 kg)|500">🧴 Plastic Bottles / PET (1 kg) (+500 pts)</option>
           <option value="Aluminum Cans / Lata|20">🥫 Aluminum Cans / Lata (+20 pts)</option>
           <option value="Tanso / Copper (1 kg)|100000">🔌 Tanso / Copper (1 kg) (+100,000 pts)</option>
-          <option value="Plastic Bottles (1 kg)|4">🥤 Plastic Bottles (1 kg) (+4 pts)</option>
+          <option value="Plastic Bottles |4">🥤 Plastic Bottles (+4 pts)</option>
           <option value="Bakal / Metal / Steel (1 kg)|500">⛓️ Bakal / Metal / Steel (1 kg) (+500 pts)</option>
         </select>
 

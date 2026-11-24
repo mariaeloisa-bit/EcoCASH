@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>EcoPoints — Earn & Cash Out via GCash</title>
   <style>
-    :root { --primary: #1b7a43; --gcash: #007dfe; --bg: #f3f8f4; --card: #ffffff; --text: #1e293b; --danger: #dc2626; }
+    :root { --primary: #1b7a43; --gcash: #007dfe; --bg: #f3f8f4; --card: #ffffff; --text: #1e293b; }
     body { font-family: system-ui, sans-serif; background: var(--bg); color: var(--text); margin: 0; padding: 20px; }
     .container { max-width: 820px; margin: 0 auto; }
     .auth-box { max-width: 380px; margin: 60px auto; background: var(--card); padding: 28px; border-radius: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.08); }
@@ -19,8 +19,6 @@
     button:hover { opacity: 0.92; }
     button.gcash-btn { background: var(--gcash); }
     button.secondary { background: #64748b; }
-    button.danger { background: var(--danger); }
-    button.small-btn { width: auto; padding: 6px 10px; font-size: 0.8rem; margin-top: 0; }
     .hidden { display: none; }
     .rate-tag { background: #e0f2fe; color: #0369a1; padding: 6px 10px; border-radius: 6px; font-size: 0.85rem; font-weight: 600; display: inline-block; margin-bottom: 10px; }
     .upload-box { border: 2px dashed #94a3b8; border-radius: 8px; padding: 12px; text-align: center; background: #f8fafc; margin: 8px 0; cursor: pointer; }
@@ -39,7 +37,7 @@
 </head>
 <body>
 
-  <!-- LOG IN / SIGN UP SCREEN -->
+  <!-- USER LOG IN / SIGN UP SCREEN -->
   <div id="auth-screen" class="auth-box">
     <h2 style="margin-top:0; color:var(--primary);">🌱 EcoPoints</h2>
     <p id="auth-subtitle" style="color:#64748b; font-size:0.9rem;">Mag-log in para mag-ipon ng points at mag-cash out sa GCash.</p>
@@ -51,7 +49,7 @@
     <p id="auth-error" style="color:#dc2626; font-size:0.85rem; margin-top:10px;"></p>
   </div>
 
-  <!-- MAIN APP DASHBOARD -->
+  <!-- USER DASHBOARD -->
   <div id="app-screen" class="container hidden">
     <header>
       <div>
@@ -72,10 +70,10 @@
 
         <label style="font-size:0.85rem; font-weight:600;">1. Uri ng Basura / Eco-Action:</label>
         <select id="trash-type">
-          <option value="Bote|500">🧴 Bote (+500 pts)</option>
+          <option value="Plastic Bottles / PET (1 kg)|500">🧴 Plastic Bottles / PET (1 kg) (+500 pts)</option>
           <option value="Aluminum Cans / Lata|20">🥫 Aluminum Cans / Lata (+20 pts)</option>
           <option value="Tanso / Copper (1 kg)|100000">🔌 Tanso / Copper (1 kg) (+100,000 pts)</option>
-          <option value="Plastic Bottles |4">🥤 Plastic Bottles (+4 pts)</option>
+          <option value="Plastic Bottles (1 kg)|4">🥤 Plastic Bottles (1 kg) (+4 pts)</option>
           <option value="Bakal / Metal / Steel (1 kg)|500">⛓️ Bakal / Metal / Steel (1 kg) (+500 pts)</option>
         </select>
 
@@ -116,27 +114,11 @@
       <h3 style="margin-top:0;">Activity History & Photo Evidence</h3>
       <ul id="history" class="history-list"></ul>
     </div>
-
-    <!-- ADMIN REVIEW PANEL -->
-    <div class="card" style="margin-top: 20px;">
-      <div style="display:flex; justify-content:space-between; align-items:center; gap:10px; flex-wrap:wrap;">
-        <h3 style="margin:0;">🛡️ Admin Evidence Review</h3>
-        <button id="toggle-admin-btn" class="secondary small-btn" onclick="toggleAdminPanel()">Unlock Admin (PIN: 1234)</button>
-      </div>
-
-      <div id="admin-panel" class="hidden" style="margin-top:14px;">
-        <p style="font-size:0.85rem; color:#64748b; margin-top:0;">I-approve ang valid na picture ng basura para ma-credit ang points sa user.</p>
-        <ul id="admin-queue" class="history-list"></ul>
-      </div>
-    </div>
   </div>
 
   <script>
     const PESO_PER_POINT = 0.10;
-    const ADMIN_PIN = "1234";
-
     let isSignUp = false;
-    let isAdminUnlocked = false;
     let users = JSON.parse(localStorage.getItem("ecoUsers")) || {};
     let currentEmail = localStorage.getItem("ecoCurrentUser") || null;
     let currentCompressedPhoto = null;
@@ -188,9 +170,6 @@
 
     document.getElementById("logout-btn").onclick = () => {
       currentEmail = null;
-      isAdminUnlocked = false;
-      document.getElementById("admin-panel").classList.add("hidden");
-      document.getElementById("toggle-admin-btn").textContent = "Unlock Admin (PIN: 1234)";
       localStorage.removeItem("ecoCurrentUser");
       authScreen.classList.remove("hidden");
       appScreen.classList.add("hidden");
@@ -231,6 +210,7 @@
         return (msg.textContent = "⚠️ Kailangan muna mag-upload o mag-picture ng basura bago mag-submit!");
       }
 
+      users = JSON.parse(localStorage.getItem("ecoUsers")) || users;
       const [actionLabel, ptsStr] = document.getElementById("trash-type").value.split("|");
       const pts = Number(String(ptsStr).replace(/,/g, "")) || 0;
       const user = users[currentEmail];
@@ -253,83 +233,9 @@
       document.getElementById("upload-label").textContent = "📷 I-click para kumuha o pumili ng picture";
 
       msg.style.color = "#15803d";
-      msg.textContent = `Naisumite ang picture! Magkakaroon ng +${pts.toLocaleString()} pts kapag na-approve sa Admin Review.`;
+      msg.textContent = `Naisumite ang picture! Magkakaroon ng +${pts.toLocaleString()} pts kapag na-approve ng Admin.`;
       saveData();
     };
-
-    window.toggleAdminPanel = () => {
-      const panel = document.getElementById("admin-panel");
-      const btn = document.getElementById("toggle-admin-btn");
-
-      if (!isAdminUnlocked) {
-        const pin = prompt("Ilagay ang Admin PIN:");
-        if (pin !== ADMIN_PIN) {
-          alert("Maling Admin PIN.");
-          return;
-        }
-        isAdminUnlocked = true;
-        panel.classList.remove("hidden");
-        btn.textContent = "Lock Admin";
-        renderAdminQueue();
-      } else {
-        isAdminUnlocked = false;
-        panel.classList.add("hidden");
-        btn.textContent = "Unlock Admin (PIN: 1234)";
-      }
-    };
-
-    window.reviewEvidence = (userEmail, entryId, decision) => {
-      const targetUser = users[userEmail];
-      if (!targetUser) return;
-      const item = targetUser.logs.find(log => log && log.id === entryId);
-      if (!item || item.status !== "pending") return;
-
-      if (decision === "approve") {
-        item.status = "approved";
-        targetUser.points = (Number(targetUser.points) || 0) + (Number(item.pts) || 0);
-        item.text = `+${Number(item.pts).toLocaleString()} pts — ${item.actionLabel} (${item.date})`;
-      } else {
-        item.status = "rejected";
-        item.text = `0 pts — ${item.actionLabel} (${item.date}) [Rejected]`;
-      }
-
-      saveData();
-    };
-
-    function renderAdminQueue() {
-      if (!isAdminUnlocked) return;
-      const queueEl = document.getElementById("admin-queue");
-      const pendingItems = [];
-
-      Object.entries(users).forEach(([email, u]) => {
-        (u.logs || []).forEach(item => {
-          if (item && item.type === "evidence" && item.status === "pending") {
-            pendingItems.push({ email, userName: u.name, item });
-          }
-        });
-      });
-
-      if (!pendingItems.length) {
-        queueEl.innerHTML = "<li style='color:#64748b; font-size:0.9rem;'>Walang pending na picture para i-review ngayon.</li>";
-        return;
-      }
-
-      queueEl.innerHTML = pendingItems.map(({ email, userName, item }) => `
-        <li class="history-item">
-          <div class="history-left">
-            ${item.photo ? `<img src="${item.photo}" class="evidence-thumb" alt="Evidence" />` : ""}
-            <div>
-              <div><strong>${userName}</strong> (${email})</div>
-              <div style="font-size:0.85rem; color:#475569;">${item.text}</div>
-            </div>
-          </div>
-          <div style="display:flex; gap:6px;">
-            <button class="small-btn" onclick="reviewEvidence('${email}', '${item.id}', 'approve')">Approve</button>
-            <button class="small-btn danger" onclick="reviewEvidence('${email}', '${item.id}', 'reject')">Reject</button>
-          </div>
-        </li>
-      `).join("");
-    }
 
     function getStatusBadge(item) {
       if (!item || item.type !== "evidence") return "";
@@ -339,6 +245,7 @@
     }
 
     function showDashboard() {
+      users = JSON.parse(localStorage.getItem("ecoUsers")) || users;
       const user = users[currentEmail];
       if (!user) return;
       const safePoints = Number(user.points) || 0;
@@ -366,7 +273,6 @@
         }).join("");
       }
 
-      renderAdminQueue();
       authScreen.classList.add("hidden");
       appScreen.classList.remove("hidden");
     }
@@ -377,6 +283,7 @@
     }
 
     window.requestGCashCashout = () => {
+      users = JSON.parse(localStorage.getItem("ecoUsers")) || users;
       const user = users[currentEmail];
       const safePoints = Number(user.points) || 0;
       const ptsRequired = Number(document.getElementById("cashout-tier").value);

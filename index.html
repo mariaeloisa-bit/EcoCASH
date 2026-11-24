@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>EcoPoints — Earn & Cash Out via GCash</title>
+  <title>EcoCASH — Earn & Cash Out via GCash</title>
   <style>
     :root { --primary: #1b7a43; --gcash: #007dfe; --admin: #0f172a; --bg: #f3f8f4; --card: #ffffff; --text: #1e293b; --danger: #dc2626; }
     body { font-family: system-ui, sans-serif; background: var(--bg); color: var(--text); margin: 0; padding: 20px; }
@@ -43,7 +43,7 @@
 
   <!-- LOG IN / SIGN UP SCREEN (USER OR ADMIN) -->
   <div id="auth-screen" class="auth-box">
-    <h2 style="margin-top:0; color:var(--primary);">🌱 EcoPoints</h2>
+    <h2 style="margin-top:0; color:var(--primary);">🌱 EcoCASH</h2>
     <p id="auth-subtitle" style="color:#64748b; font-size:0.9rem;">Mag-log in gamit ang User o Admin account.</p>
     <input type="text" id="name-input" class="hidden" placeholder="Full Name (hal. Maria Eloisa)" />
     <input type="email" id="email-input" placeholder="Email Address" />
@@ -57,7 +57,7 @@
   <div id="user-screen" class="container hidden">
     <header>
       <div>
-        <h1 style="margin:0;">🌱 EcoPoints</h1>
+        <h1 style="margin:0;">🌱 EcoCASH</h1>
         <p style="margin:4px 0 0; opacity:0.9;">Welcome, <span id="user-name">User</span>!</p>
       </div>
       <div style="text-align:right;">
@@ -124,7 +124,7 @@
   <div id="admin-screen" class="container hidden">
     <header class="admin-header">
       <div>
-        <h1 style="margin:0;">🛡️ EcoPoints Admin</h1>
+        <h1 style="margin:0;">🛡️ EcoCASH Admin</h1>
         <p style="margin:4px 0 0; opacity:0.85;">Logged in as <span id="admin-name">Admin</span></p>
       </div>
       <div style="text-align:right;">

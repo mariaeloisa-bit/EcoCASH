@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>EcoPoints — Earn & Cash Out via GCash</title>
+  <title>EcoCASH — Earn & Cash Out via GCash</title>
   <style>
     :root { --primary: #1b7a43; --gcash: #007dfe; --admin: #0f172a; --bg: #f3f8f4; --card: #ffffff; --text: #1e293b; --danger: #dc2626; }
     body { font-family: system-ui, sans-serif; background: var(--bg); color: var(--text); margin: 0; padding: 20px; }
@@ -43,7 +43,7 @@
 
   <!-- LOG IN / SIGN UP SCREEN (USER OR ADMIN) -->
   <div id="auth-screen" class="auth-box">
-    <h2 style="margin-top:0; color:var(--primary);">🌱 EcoPoints</h2>
+    <h2 style="margin-top:0; color:var(--primary);">🌱 EcoCASH</h2>
     <p id="auth-subtitle" style="color:#64748b; font-size:0.9rem;">Mag-log in gamit ang User o Admin account.</p>
     <input type="text" id="name-input" class="hidden" placeholder="Full Name (hal. Maria Eloisa)" />
     <input type="email" id="email-input" placeholder="Email Address" />
@@ -57,7 +57,7 @@
   <div id="user-screen" class="container hidden">
     <header>
       <div>
-        <h1 style="margin:0;">🌱 EcoPoints</h1>
+        <h1 style="margin:0;">🌱 EcoCASH</h1>
         <p style="margin:4px 0 0; opacity:0.9;">Welcome, <span id="user-name">User</span>!</p>
       </div>
       <div style="text-align:right;">
@@ -124,7 +124,7 @@
   <div id="admin-screen" class="container hidden">
     <header class="admin-header">
       <div>
-        <h1 style="margin:0;">🛡️ EcoPoints Admin</h1>
+        <h1 style="margin:0;">🛡️ EcoCASH Admin</h1>
         <p style="margin:4px 0 0; opacity:0.85;">Logged in as <span id="admin-name">System Admin</span></p>
       </div>
       <div style="text-align:right;">
@@ -157,8 +157,8 @@
     let currentCompressedPhoto = null;
 
     try {
-      users = JSON.parse(localStorage.getItem("ecoUsers")) || {};
-      currentSession = JSON.parse(localStorage.getItem("ecoSession")) || null;
+      users = JSON.parse(localStorage.getItem("ecoCashUsers")) || {};
+      currentSession = JSON.parse(localStorage.getItem("ecoCashSession")) || null;
     } catch (e) {
       users = {};
       currentSession = null;
@@ -176,7 +176,7 @@
         nameInput.classList.remove("hidden");
         submitBtn.textContent = "Create Account";
         toggleBtn.textContent = "May account na? Log In";
-        subtitle.textContent = "Gumawa ng bagong User account.";
+        subtitle.textContent = "Gumawa ng bagong User account sa EcoCASH.";
       } else {
         nameInput.classList.add("hidden");
         submitBtn.textContent = "Log In";
@@ -212,34 +212,34 @@
           return;
         }
         users[email] = { name: name, password: password, points: 0, logs: [] };
-        localStorage.setItem("ecoUsers", JSON.stringify(users));
+        localStorage.setItem("ecoCashUsers", JSON.stringify(users));
         currentSession = { role: "user", email: email };
-        localStorage.setItem("ecoSession", JSON.stringify(currentSession));
+        localStorage.setItem("ecoCashSession", JSON.stringify(currentSession));
         routeSession();
         return;
       }
 
       if (email === ADMIN_ACCOUNT.email.toLowerCase() && password === ADMIN_ACCOUNT.password) {
         currentSession = { role: "admin", email: ADMIN_ACCOUNT.email, name: ADMIN_ACCOUNT.name };
-        localStorage.setItem("ecoSession", JSON.stringify(currentSession));
+        localStorage.setItem("ecoCashSession", JSON.stringify(currentSession));
         routeSession();
         return;
       }
 
-      users = JSON.parse(localStorage.getItem("ecoUsers")) || {};
+      users = JSON.parse(localStorage.getItem("ecoCashUsers")) || {};
       if (!users[email] || users[email].password !== password) {
         authError.textContent = "Maling email o password. Mag-Sign Up muna kung wala pang account.";
         return;
       }
 
       currentSession = { role: "user", email: email };
-      localStorage.setItem("ecoSession", JSON.stringify(currentSession));
+      localStorage.setItem("ecoCashSession", JSON.stringify(currentSession));
       routeSession();
     }
 
     function logoutUser() {
       currentSession = null;
-      localStorage.removeItem("ecoSession");
+      localStorage.removeItem("ecoCashSession");
       document.getElementById("user-screen").classList.add("hidden");
       document.getElementById("admin-screen").classList.add("hidden");
       document.getElementById("auth-screen").classList.remove("hidden");
@@ -267,206 +267,4 @@
           const preview = document.getElementById("photo-preview");
           preview.src = currentCompressedPhoto;
           preview.style.display = "block";
-          document.getElementById("upload-label").textContent = "✅ Picture ready! (I-click ulit kung papalitan)";
-        };
-        img.src = e.target.result;
-      };
-      reader.readAsDataURL(file);
-    }
-
-    function submitTrashWithPhoto() {
-      const msg = document.getElementById("submit-msg");
-      msg.style.color = "#dc2626";
-
-      if (!currentCompressedPhoto) {
-        msg.textContent = "⚠️ Kailangan muna mag-upload o mag-picture ng basura bago mag-submit!";
-        return;
-      }
-
-      users = JSON.parse(localStorage.getItem("ecoUsers")) || users;
-      const parts = document.getElementById("trash-type").value.split("|");
-      const actionLabel = parts[0];
-      const pts = Number(String(parts[1]).replace(/,/g, "")) || 0;
-      const user = users[currentSession.email];
-
-      const entryId = "ev_" + Date.now() + "_" + Math.random().toString(36).slice(2, 6);
-      user.logs.unshift({
-        id: entryId,
-        type: "evidence",
-        status: "pending",
-        pts: pts,
-        actionLabel: actionLabel,
-        date: new Date().toLocaleDateString(),
-        text: actionLabel + " (" + pts.toLocaleString() + " pts) — " + new Date().toLocaleDateString(),
-        photo: currentCompressedPhoto
-      });
-
-      currentCompressedPhoto = null;
-      document.getElementById("trash-photo").value = "";
-      document.getElementById("photo-preview").style.display = "none";
-      document.getElementById("upload-label").textContent = "📷 I-click para kumuha o pumili ng picture";
-
-      msg.style.color = "#15803d";
-      msg.textContent = "Naisumite ang picture! Magkakaroon ng +" + pts.toLocaleString() + " pts kapag na-approve ng Admin.";
-      saveUsersAndRefresh();
-    }
-
-    function reviewEvidence(userEmail, entryId, decision) {
-      users = JSON.parse(localStorage.getItem("ecoUsers")) || users;
-      const targetUser = users[userEmail];
-      if (!targetUser) return;
-      const item = (targetUser.logs || []).find(function(log) { return log && log.id === entryId; });
-      if (!item || item.status !== "pending") return;
-
-      if (decision === "approve") {
-        item.status = "approved";
-        targetUser.points = (Number(targetUser.points) || 0) + (Number(item.pts) || 0);
-        item.text = "+" + Number(item.pts).toLocaleString() + " pts — " + item.actionLabel + " (" + item.date + ")";
-      } else {
-        item.status = "rejected";
-        item.text = "0 pts — " + item.actionLabel + " (" + item.date + ") [Rejected]";
-      }
-
-      saveUsersAndRefresh();
-    }
-
-    function getStatusBadge(item) {
-      if (!item || item.type !== "evidence") return "";
-      if (item.status === "approved") return '<span class="status-approved">Approved</span>';
-      if (item.status === "rejected") return '<span class="status-rejected">Rejected</span>';
-      return '<span class="status-pending">Pending Review</span>';
-    }
-
-    function showUserDashboard() {
-      users = JSON.parse(localStorage.getItem("ecoUsers")) || users;
-      const user = users[currentSession.email];
-      if (!user) return;
-
-      const safePoints = Number(user.points) || 0;
-      document.getElementById("user-name").textContent = user.name;
-      document.getElementById("balance").textContent = safePoints.toLocaleString();
-      document.getElementById("peso-balance").textContent = (safePoints * PESO_PER_POINT).toFixed(2);
-
-      const historyEl = document.getElementById("history");
-      if (!user.logs.length) {
-        historyEl.innerHTML = "<li style='color:#64748b; font-size:0.9rem;'>Wala pang activity. Mag-picture ng basura para mag-ipon ng points!</li>";
-      } else {
-        historyEl.innerHTML = user.logs.map(function(item) {
-          if (typeof item === "string") {
-            return '<li class="history-item"><div class="history-left"><span>' + item + '</span></div></li>';
-          }
-          const imgHtml = item.photo ? '<img src="' + item.photo + '" class="evidence-thumb" alt="Evidence" />' : '';
-          return '<li class="history-item"><div class="history-left">' + imgHtml + '<span>' + item.text + '</span></div>' + getStatusBadge(item) + '</li>';
-        }).join("");
-      }
-
-      document.getElementById("auth-screen").classList.add("hidden");
-      document.getElementById("admin-screen").classList.add("hidden");
-      document.getElementById("user-screen").classList.remove("hidden");
-    }
-
-    function showAdminDashboard() {
-      users = JSON.parse(localStorage.getItem("ecoUsers")) || users;
-      document.getElementById("admin-name").textContent = currentSession.name || ADMIN_ACCOUNT.name;
-
-      const pendingList = document.getElementById("admin-pending-list");
-      const usersList = document.getElementById("admin-users-list");
-      const pendingItems = [];
-
-      Object.keys(users).forEach(function(email) {
-        const u = users[email];
-        (u.logs || []).forEach(function(item) {
-          if (item && item.type === "evidence" && item.status === "pending") {
-            pendingItems.push({ email: email, userName: u.name, item: item });
-          }
-        });
-      });
-
-      if (!pendingItems.length) {
-        pendingList.innerHTML = "<li style='color:#64748b; font-size:0.9rem;'>Walang pending na picture para i-review ngayon.</li>";
-      } else {
-        pendingList.innerHTML = pendingItems.map(function(entry) {
-          const imgHtml = entry.item.photo ? '<img src="' + entry.item.photo + '" class="evidence-thumb" alt="Evidence" />' : '';
-          return '<li class="history-item"><div class="history-left">' + imgHtml +
-            '<div><div><strong>' + entry.userName + '</strong> <span style="color:#64748b; font-size:0.85rem;">(' + entry.email + ')</span></div>' +
-            '<div style="font-size:0.88rem; margin-top:2px;">' + entry.item.text + '</div></div></div>' +
-            '<div style="display:flex; gap:8px;">' +
-            '<button type="button" class="small-btn" onclick="reviewEvidence(\'' + entry.email + '\', \'' + entry.item.id + '\', \'approve\')">Approve</button>' +
-            '<button type="button" class="small-btn danger" onclick="reviewEvidence(\'' + entry.email + '\', \'' + entry.item.id + '\', \'reject\')">Reject</button>' +
-            '</div></li>';
-        }).join("");
-      }
-
-      const emails = Object.keys(users);
-      if (!emails.length) {
-        usersList.innerHTML = "<li style='color:#64748b; font-size:0.9rem;'>Wala pang naka-register na user.</li>";
-      } else {
-        usersList.innerHTML = emails.map(function(email) {
-          const u = users[email];
-          const pts = Number(u.points) || 0;
-          return '<li class="history-item"><div><strong>' + u.name + '</strong> <span style="color:#64748b; font-size:0.85rem;">(' + email + ')</span></div>' +
-            '<div><strong>' + pts.toLocaleString() + ' pts</strong> <span style="color:#64748b; font-size:0.85rem;">(₱' + (pts * PESO_PER_POINT).toFixed(2) + ')</span></div></li>';
-        }).join("");
-      }
-
-      document.getElementById("auth-screen").classList.add("hidden");
-      document.getElementById("user-screen").classList.add("hidden");
-      document.getElementById("admin-screen").classList.remove("hidden");
-    }
-
-    function saveUsersAndRefresh() {
-      localStorage.setItem("ecoUsers", JSON.stringify(users));
-      routeSession();
-    }
-
-    function routeSession() {
-      if (!currentSession) return;
-      if (currentSession.role === "admin") {
-        showAdminDashboard();
-      } else if (users[currentSession.email]) {
-        showUserDashboard();
-      }
-    }
-
-    function requestGCashCashout() {
-      users = JSON.parse(localStorage.getItem("ecoUsers")) || users;
-      const user = users[currentSession.email];
-      const safePoints = Number(user.points) || 0;
-      const ptsRequired = Number(document.getElementById("cashout-tier").value);
-      const pesoAmount = ptsRequired * PESO_PER_POINT;
-      const gcashNumber = document.getElementById("gcash-number").value.trim();
-      const gcashName = document.getElementById("gcash-name").value.trim();
-      const msg = document.getElementById("cashout-msg");
-
-      msg.style.color = "#dc2626";
-      if (safePoints < ptsRequired) {
-        msg.textContent = "Kulang pa ang points mo. Kailangan ng " + ptsRequired.toLocaleString() + " pts.";
-        return;
-      }
-      if (!/^09\d{9}$/.test(gcashNumber)) {
-        msg.textContent = "Ilagay ang tamang 11-digit GCash number (09xxxxxxxxx).";
-        return;
-      }
-      if (!gcashName) {
-        msg.textContent = "Ilagay ang pangalan ng GCash account.";
-        return;
-      }
-
-      user.points = safePoints - ptsRequired;
-      user.logs.unshift({
-        type: "cashout",
-        text: "-" + ptsRequired.toLocaleString() + " pts — GCash Cashout ₱" + pesoAmount.toFixed(2) + " to " + gcashNumber + " (" + gcashName + ") [Pending]",
-        photo: null
-      });
-      saveUsersAndRefresh();
-
-      document.getElementById("gcash-number").value = "";
-      document.getElementById("gcash-name").value = "";
-      msg.style.color = "#15803d";
-      msg.textContent = "Naipadala na ang request mo na ₱" + pesoAmount.toFixed(2) + " sa GCash (" + gcashNumber + ")!";
-    }
-
-    routeSession();
-  </script>
-</body>
-</html>
+          document.getElementById("upload-label").textContent = "✅ Picture ready! (I-click ulit kung

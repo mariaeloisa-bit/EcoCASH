@@ -72,7 +72,7 @@
 
         <label style="font-size:0.85rem; font-weight:600;">1. Uri ng Basura / Eco-Action:</label>
         <select id="trash-type">
-          <option value="Plastic Bottles / PET (1 kg)|500">🧴 Plastic Bottles / PET (1 kg) (+500 pts)</option>
+          <option value="Bote|500">🧴 Bote (+500 pts)</option>
           <option value="Aluminum Cans / Lata|20">🥫 Aluminum Cans / Lata (+20 pts)</option>
           <option value="Tanso / Copper (1 kg)|100000">🔌 Tanso / Copper (1 kg) (+100,000 pts)</option>
           <option value="Plastic Bottles |4">🥤 Plastic Bottles (+4 pts)</option>

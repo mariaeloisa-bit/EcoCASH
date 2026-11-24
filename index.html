@@ -146,8 +146,8 @@
   <script>
     const PESO_PER_POINT = 0.10;
     const ADMIN_ACCOUNT = {
-      email: "admin@ecopoints.ph",
-      password: "admin123",
+      email: "eloisajeff14@gmail.com",
+      password: "091420251217",
       name: "System Admin"
     };
 
